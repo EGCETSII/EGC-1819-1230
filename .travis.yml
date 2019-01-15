@@ -1,0 +1,27 @@
+language: python
+python:
+- '3.6'
+env:
+- DJANGO_VERSION=2.0 DB=postgres
+before_install:
+- cd decide
+install:
+- pip install -q -r ../requirements-build.txt
+script:
+- cd mixnet
+- cd ..
+services:
+- postgresql
+addons:
+  postgresql: "9.6"
+global:
+  - PGPORT=5432
+before_script:
+ - cd .. cp local_settings.travis.py local_settings.py
+ - cd decide
+ - psql -c "create user decide with password 'decide'"
+ - psql -c "create database decide owner decide"
+ - psql -c "alter user decide createdb"
+ - python3 manage.py makemigrations mixnet
+ - python3 manage.py migrate
+ - python3 manage.py test store.tests
